@@ -6,7 +6,8 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetDescription
+  SheetDescription,
+  SheetClose
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -35,11 +36,12 @@ export default function EditorOptionsSettings({ isOpen, onClose }: EditorOptions
     onClose();
   };
 
-  // Using isOpen prop directly as the controlled state for the Sheet
-  // We don't pass the onOpenChange callback to avoid potential loops
+  // If not open, don't render the component at all
+  if (!isOpen) return null;
+
   return (
-    <Sheet open={isOpen}>
-      <SheetContent className="sm:max-w-md" onEscapeKeyDown={onClose} onPointerDownOutside={onClose}>
+    <Sheet open={true} onOpenChange={(open) => !open && onClose()}>
+      <SheetContent className="sm:max-w-md">
         <SheetHeader>
           <SheetTitle>Editor Options</SheetTitle>
           <SheetDescription>

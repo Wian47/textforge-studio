@@ -7,7 +7,8 @@ import {
   SheetContent, 
   SheetHeader, 
   SheetTitle, 
-  SheetDescription
+  SheetDescription,
+  SheetClose
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -45,8 +46,11 @@ export default function AppearanceSettings({ isOpen, onClose }: AppearanceSettin
     onClose();
   };
 
+  // If not open, don't render the component at all
+  if (!isOpen) return null;
+
   return (
-    <Sheet open={isOpen} onOpenChange={onClose}>
+    <Sheet open={true} onOpenChange={(open) => !open && onClose()}>
       <SheetContent className="sm:max-w-md">
         <SheetHeader>
           <SheetTitle>Appearance Settings</SheetTitle>
