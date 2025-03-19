@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useEditor } from '@/context/EditorContext';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -16,6 +15,7 @@ export default function AppearanceSettings() {
     toast({
       title: "Theme updated",
       description: `Theme set to ${value} mode`,
+      duration: 2000,
     });
   };
   
@@ -29,32 +29,41 @@ export default function AppearanceSettings() {
           onValueChange={handleThemeChange}
           className="grid grid-cols-3 gap-2"
         >
-          <div className={cn(
-            "flex flex-col items-center space-y-2 border rounded-md p-3 transition-all",
-            theme === "light" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
-          )}>
+          <Label
+            htmlFor="theme-light"
+            className={cn(
+              "flex flex-col items-center justify-between rounded-md border-2 border-muted p-4 cursor-pointer hover:bg-accent hover:text-accent-foreground",
+              theme === "light" ? "border-primary" : "border-muted"
+            )}
+          >
             <RadioGroupItem value="light" id="theme-light" className="sr-only" />
-            <Sun size={18} className="text-yellow-500" />
-            <Label htmlFor="theme-light" className="text-xs font-medium">Light</Label>
-          </div>
+            <Sun size={18} className="mb-3 text-yellow-500" />
+            <span className="text-xs font-medium">Light</span>
+          </Label>
           
-          <div className={cn(
-            "flex flex-col items-center space-y-2 border rounded-md p-3 transition-all",
-            theme === "dark" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
-          )}>
+          <Label
+            htmlFor="theme-dark"
+            className={cn(
+              "flex flex-col items-center justify-between rounded-md border-2 border-muted p-4 cursor-pointer hover:bg-accent hover:text-accent-foreground",
+              theme === "dark" ? "border-primary" : "border-muted"
+            )}
+          >
             <RadioGroupItem value="dark" id="theme-dark" className="sr-only" />
-            <Moon size={18} className="text-blue-400" />
-            <Label htmlFor="theme-dark" className="text-xs font-medium">Dark</Label>
-          </div>
+            <Moon size={18} className="mb-3 text-blue-400" />
+            <span className="text-xs font-medium">Dark</span>
+          </Label>
           
-          <div className={cn(
-            "flex flex-col items-center space-y-2 border rounded-md p-3 transition-all",
-            theme === "system" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
-          )}>
+          <Label
+            htmlFor="theme-system"
+            className={cn(
+              "flex flex-col items-center justify-between rounded-md border-2 border-muted p-4 cursor-pointer hover:bg-accent hover:text-accent-foreground",
+              theme === "system" ? "border-primary" : "border-muted"
+            )}
+          >
             <RadioGroupItem value="system" id="theme-system" className="sr-only" />
-            <Monitor size={18} className="text-green-400" />
-            <Label htmlFor="theme-system" className="text-xs font-medium">System</Label>
-          </div>
+            <Monitor size={18} className="mb-3 text-green-400" />
+            <span className="text-xs font-medium">System</span>
+          </Label>
         </RadioGroup>
       </div>
     </div>

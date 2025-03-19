@@ -76,21 +76,40 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
   const [executionResult, setExecutionResult] = useState<ExecutionResult | null>(null);
 
   useEffect(() => {
-    const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    if (isDark) {
-      setTheme('dark');
-      document.documentElement.classList.add('dark');
+    // Check for saved theme preference
+    const savedTheme = localStorage.getItem('theme-preference') as 'light' | 'dark' | 'system' | null;
+    
+    if (savedTheme) {
+      // Use saved preference
+      setTheme(savedTheme);
+      
+      if (savedTheme === 'dark' || (savedTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    } else {
+      // Use system preference as default if no saved preference
+      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (isDark) {
+        setTheme('system');
+        document.documentElement.classList.add('dark');
+      }
     }
   }, []);
 
   const toggleTheme = (newTheme: 'light' | 'dark' | 'system') => {
     setTheme(newTheme);
     
+    // Apply theme to document
     if (newTheme === 'dark' || (newTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
+    
+    // Save theme preference to localStorage for persistence
+    localStorage.setItem('theme-preference', newTheme);
   };
 
   const updateEditorSettings = (newSettings: Partial<EditorSettings>) => {
