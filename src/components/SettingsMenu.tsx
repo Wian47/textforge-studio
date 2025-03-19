@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { Settings, Monitor, PenTool, GitBranch, Terminal, Brain } from 'lucide-react';
-import { useEditor } from '@/context/EditorContext';
 import { usePluginManager } from '@/plugins/PluginManager';
 import { 
   DropdownMenu, 
@@ -56,11 +55,11 @@ export default function SettingsMenu() {
           <DropdownMenuLabel>Editor Settings</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem onClick={() => openSettings('appearance')}>
+            <DropdownMenuItem onSelect={() => openSettings('appearance')}>
               <Monitor className="mr-2 h-4 w-4" />
               <span>Appearance</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => openSettings('editorOptions')}>
+            <DropdownMenuItem onSelect={() => openSettings('editorOptions')}>
               <PenTool className="mr-2 h-4 w-4" />
               <span>Editor Options</span>
               <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
@@ -72,17 +71,17 @@ export default function SettingsMenu() {
           <DropdownMenuSeparator />
           
           <DropdownMenuGroup>
-            <DropdownMenuItem onClick={() => openSettings('git')}>
+            <DropdownMenuItem onSelect={() => openSettings('git')}>
               <GitBranch className="mr-2 h-4 w-4" />
               <span>Git</span>
               <DropdownMenuShortcut>⌘G</DropdownMenuShortcut>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => openSettings('terminal')}>
+            <DropdownMenuItem onSelect={() => openSettings('terminal')}>
               <Terminal className="mr-2 h-4 w-4" />
               <span>Terminal</span>
               <DropdownMenuShortcut>⌘T</DropdownMenuShortcut>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => openSettings('lsp')}>
+            <DropdownMenuItem onSelect={() => openSettings('lsp')}>
               <Brain className="mr-2 h-4 w-4" />
               <span>LSP</span>
             </DropdownMenuItem>
@@ -95,7 +94,7 @@ export default function SettingsMenu() {
           {plugins.map((plugin) => (
             <DropdownMenuItem 
               key={plugin.id}
-              onClick={() => isPluginActive(plugin.id) 
+              onSelect={() => isPluginActive(plugin.id) 
                 ? deactivatePlugin(plugin.id) 
                 : activatePlugin(plugin.id)
               }

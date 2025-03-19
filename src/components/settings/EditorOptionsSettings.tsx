@@ -35,9 +35,11 @@ export default function EditorOptionsSettings({ isOpen, onClose }: EditorOptions
     onClose();
   };
 
+  // Using isOpen prop directly as the controlled state for the Sheet
+  // We don't pass the onOpenChange callback to avoid potential loops
   return (
-    <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent className="sm:max-w-md">
+    <Sheet open={isOpen}>
+      <SheetContent className="sm:max-w-md" onEscapeKeyDown={onClose} onPointerDownOutside={onClose}>
         <SheetHeader>
           <SheetTitle>Editor Options</SheetTitle>
           <SheetDescription>
