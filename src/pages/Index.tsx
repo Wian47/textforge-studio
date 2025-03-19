@@ -33,13 +33,15 @@ const Index = () => {
   return (
     <EditorProvider>
       <PluginManagerProvider>
-        <div className="flex flex-col h-screen w-full overflow-hidden">
+        <div className="flex flex-col h-screen w-full overflow-hidden bg-gradient-to-br from-background to-background/95">
           <Header />
           <div className="flex-1 flex overflow-hidden">
             <Sidebar />
             <div className="flex-1 flex flex-col overflow-hidden">
               <TabBar />
-              <MonacoEditor />
+              <div className="flex-1 overflow-hidden shadow-inner bg-editor-background">
+                <MonacoEditor />
+              </div>
             </div>
           </div>
           <StatusBar />

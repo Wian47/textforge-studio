@@ -11,16 +11,16 @@
     --editor-background: 220 14% 96%;
     --editor-foreground: 222.2 84% 4.9%;
 
-    --sidebar-background: 220 13% 91%;
-    --sidebar-foreground: 222.2 84% 4.9%;
-    --sidebar-hover: 220 13% 88%;
-    --sidebar-border: 220 13% 85%;
+    --sidebar-background: 222 47% 11%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-hover: 220 47% 16%;
+    --sidebar-border: 220 47% 16%;
 
-    --header-background: 0 0% 100%;
-    --header-foreground: 222.2 84% 4.9%;
+    --header-background: 222 47% 11%;
+    --header-foreground: 210 40% 98%;
 
-    --statusbar-background: 213 27% 84%;
-    --statusbar-foreground: 222.2 84% 4.9%;
+    --statusbar-background: 222 47% 11%;
+    --statusbar-foreground: 215 20.2% 65.1%;
 
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
@@ -28,7 +28,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 210 100% 50%;
+    --primary: 221 83% 53%;
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -37,7 +37,7 @@
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 210 100% 50%;
+    --accent: 221 83% 53%;
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 84.2% 60.2%;
@@ -45,7 +45,7 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --ring: 221 83% 53%;
 
     --radius: 0.5rem;
   }
@@ -54,19 +54,19 @@
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
 
-    --editor-background: 220 14% 10%;
+    --editor-background: 222 47% 11%;
     --editor-foreground: 210 40% 98%;
 
-    --sidebar-background: 220 13% 18%;
+    --sidebar-background: 222 47% 11%;
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-hover: 220 13% 22%;
-    --sidebar-border: 220 13% 25%;
+    --sidebar-hover: 220 47% 16%;
+    --sidebar-border: 220 47% 16%;
 
-    --header-background: 222.2 84% 4.9%;
+    --header-background: 222 47% 9%;
     --header-foreground: 210 40% 98%;
 
-    --statusbar-background: 213 27% 25%;
-    --statusbar-foreground: 210 40% 98%;
+    --statusbar-background: 222 47% 9%;
+    --statusbar-foreground: 215 20.2% 65.1%;
 
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
@@ -74,7 +74,7 @@
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 210 100% 50%;
+    --primary: 217 91% 60%;
     --primary-foreground: 210 40% 98%;
 
     --secondary: 217.2 32.6% 17.5%;
@@ -83,7 +83,7 @@
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 210 100% 50%;
+    --accent: 217 91% 60%;
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 62.8% 30.6%;
@@ -91,7 +91,7 @@
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --ring: 224.3 76.3% 48%;
   }
 }
 
@@ -107,20 +107,16 @@
 
   /* Custom scrollbar */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
   }
 
   ::-webkit-scrollbar-track {
-    background: transparent;
+    @apply bg-transparent;
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-muted rounded-full;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    @apply bg-muted-foreground/30;
+    @apply bg-muted/80 rounded-full hover:bg-muted-foreground/50 transition-colors;
   }
 }
 
@@ -128,14 +124,38 @@
   .animate-in {
     animation-timing-function: cubic-bezier(0.2, 0, 0.2, 1);
   }
+  
+  .glass-effect {
+    @apply backdrop-blur-sm bg-background/80 border border-border/50;
+  }
+  
+  .text-balance {
+    text-wrap: balance;
+  }
 }
 
 /* Monaco editor customizations */
 .monaco-editor {
   padding: 0.5rem 0;
+  transition: all 0.2s ease;
 }
 
 .monaco-editor .monaco-editor-background,
 .monaco-editor .margin-view-overlays {
   background-color: transparent !important;
+}
+
+/* Button and interactive element animations */
+button, a {
+  transition: all 0.2s ease;
+}
+
+/* Card and container shadows */
+.card, .container {
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+/* Focus styles */
+*:focus-visible {
+  @apply outline-none ring-2 ring-ring ring-offset-1 ring-offset-background;
 }
