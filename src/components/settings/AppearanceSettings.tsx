@@ -7,8 +7,7 @@ import {
   SheetContent, 
   SheetHeader, 
   SheetTitle, 
-  SheetDescription,
-  SheetClose
+  SheetDescription
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -45,16 +44,9 @@ export default function AppearanceSettings({ isOpen, onClose }: AppearanceSettin
     });
     onClose();
   };
-  
-  // Prevent event propagation to avoid issues with event bubbling
-  const handleSheetOpenChange = (open: boolean) => {
-    if (!open) {
-      onClose();
-    }
-  };
 
   return (
-    <Sheet open={isOpen} onOpenChange={handleSheetOpenChange}>
+    <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent className="sm:max-w-md">
         <SheetHeader>
           <SheetTitle>Appearance Settings</SheetTitle>

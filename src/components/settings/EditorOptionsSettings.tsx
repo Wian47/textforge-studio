@@ -35,15 +35,8 @@ export default function EditorOptionsSettings({ isOpen, onClose }: EditorOptions
     onClose();
   };
 
-  // Prevent event propagation to avoid issues with event bubbling
-  const handleSheetOpenChange = (open: boolean) => {
-    if (!open) {
-      onClose();
-    }
-  };
-
   return (
-    <Sheet open={isOpen} onOpenChange={handleSheetOpenChange}>
+    <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent className="sm:max-w-md">
         <SheetHeader>
           <SheetTitle>Editor Options</SheetTitle>

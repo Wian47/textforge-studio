@@ -22,7 +22,6 @@ import TerminalSettings from './settings/TerminalSettings';
 import LSPSettings from './settings/LSPSettings';
 
 export default function SettingsMenu() {
-  const { activeFile } = useEditor();
   const { plugins, activatePlugin, deactivatePlugin, isPluginActive } = usePluginManager();
   
   // State for controlling which settings panel is open
