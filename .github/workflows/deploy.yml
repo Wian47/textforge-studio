@@ -30,16 +30,14 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Check build output
-        run: |
-          echo "Contents of dist directory:"
-          ls -la dist
-          echo "Contents of dist/assets directory:"
-          ls -la dist/assets || echo "No assets directory found"
+      - name: Check dist directory
+        run: ls -la dist
 
-      - name: Prepare deployment
+      - name: Prepare for deployment
         run: |
           cp dist/index.html dist/404.html
+          echo "textforge-studio.test" > dist/CNAME
+          cp -r public/* dist/ || echo "No public files to copy"
           touch dist/.nojekyll
 
       - name: Deploy to GitHub Pages
@@ -48,8 +46,6 @@ jobs:
           git rm -rf .
           cp -r dist/* .
           cp dist/.nojekyll .
-          echo "Contents of current directory before commit:"
-          ls -la
           git add .
           git commit -m "Deploy to GitHub Pages"
           git push -f https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git gh-pages 
