@@ -1,16 +1,23 @@
 
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useEditor } from '@/context/EditorContext';
+import { usePluginManager } from '@/plugins/PluginManager';
 import Editor, { OnMount } from '@monaco-editor/react';
 import { cn } from '@/lib/utils';
 
 export default function MonacoEditor() {
   const { activeFile, saveFile, theme } = useEditor();
+  const { pluginAPI } = usePluginManager();
   const editorRef = useRef<any>(null);
   
-  const handleEditorDidMount: OnMount = (editor) => {
+  const handleEditorDidMount: OnMount = (editor, monaco) => {
     editorRef.current = editor;
     editor.focus();
+    
+    // Make the editor instance available to plugins
+    if (pluginAPI) {
+      pluginAPI.editor = editor;
+    }
     
     // Add auto-save functionality
     editor.onDidChangeModelContent(() => {
@@ -18,6 +25,12 @@ export default function MonacoEditor() {
         const content = editor.getValue();
         saveFile(activeFile.id, content);
       }
+    });
+    
+    // Add keyboard shortcuts for modal editing
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyP, () => {
+      // Command palette functionality
+      console.log('Command palette triggered');
     });
   };
   
