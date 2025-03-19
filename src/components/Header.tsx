@@ -1,7 +1,8 @@
 
 import React from 'react';
-import { Code, Settings } from 'lucide-react';
+import { Code } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
+import SettingsMenu from './SettingsMenu';
 import { cn } from '@/lib/utils';
 
 export default function Header() {
@@ -17,16 +18,7 @@ export default function Header() {
       
       <div className="flex items-center space-x-2">
         <ThemeToggle />
-        <button
-          className={cn(
-            "p-2 rounded-md transition-all duration-200",
-            "hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary/30",
-            "text-muted-foreground hover:text-foreground"
-          )}
-          aria-label="Settings"
-        >
-          <Settings size={18} />
-        </button>
+        <SettingsMenu />
       </div>
     </header>
   );
