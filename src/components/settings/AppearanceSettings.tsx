@@ -5,6 +5,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Moon, Sun, Monitor } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default function AppearanceSettings() {
   const { theme, toggleTheme } = useEditor();
