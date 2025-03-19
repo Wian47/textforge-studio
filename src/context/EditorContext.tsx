@@ -100,15 +100,38 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
   const setActiveFileHandler = (file: FileType) => {
     if (file.isDirectory) return;
     
-    const updatedFiles = files.map(f => {
-      if (f.id === file.id) {
-        return { ...f, isOpen: true };
+    // Find the file in our files array to get the most up-to-date content
+    const findFile = (files: FileType[]): FileType | null => {
+      for (const f of files) {
+        if (f.id === file.id) return { ...f };  // Return a copy of the file
+        if (f.children) {
+          const found = findFile(f.children);
+          if (found) return found;
+        }
       }
-      return f;
+      return null;
+    };
+    
+    const currentFile = findFile(files);
+    if (!currentFile) return;
+    
+    // Update files array to mark the file as open
+    setFiles(prev => {
+      const updateFileInArray = (files: FileType[]): FileType[] => {
+        return files.map(f => {
+          if (f.id === file.id) {
+            return { ...f, isOpen: true };
+          }
+          if (f.children) {
+            return { ...f, children: updateFileInArray(f.children) };
+          }
+          return f;
+        });
+      };
+      return updateFileInArray(prev);
     });
     
-    setFiles(updatedFiles);
-    setActiveFile(file);
+    setActiveFile(currentFile);
   };
   
   // Function to determine language from file extension
@@ -321,30 +344,23 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
   };
 
   const saveFile = (id: string, content: string) => {
+    // Update files array with new content
     setFiles(prev => {
-      const updatedFiles = prev.map(file => {
-        if (file.id === id) {
-          return { ...file, content };
-        }
-        
-        if (file.children) {
-          return {
-            ...file,
-            children: file.children.map(child => {
-              if (child.id === id) {
-                return { ...child, content };
-              }
-              return child;
-            })
-          };
-        }
-        
-        return file;
-      });
-      
-      return updatedFiles;
+      const updateFileContent = (files: FileType[]): FileType[] => {
+        return files.map(f => {
+          if (f.id === id) {
+            return { ...f, content };
+          }
+          if (f.children) {
+            return { ...f, children: updateFileContent(f.children) };
+          }
+          return f;
+        });
+      };
+      return updateFileContent(prev);
     });
     
+    // Update active file if it's the one being saved
     if (activeFile && activeFile.id === id) {
       setActiveFile(prev => prev ? { ...prev, content } : null);
     }

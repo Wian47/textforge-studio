@@ -1,8 +1,8 @@
-
 import React from 'react';
 import { Code, Zap } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import SettingsMenu from './SettingsMenu';
+import RunButton from './RunButton';
 import { cn } from '@/lib/utils';
 
 export default function Header() {
@@ -22,6 +22,7 @@ export default function Header() {
       </div>
       
       <div className="flex items-center space-x-2">
+        <RunButton />
         <SettingsMenu />
         <ThemeToggle />
       </div>
