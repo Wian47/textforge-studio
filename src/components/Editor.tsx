@@ -32,23 +32,32 @@ export default function MonacoEditor() {
       // Command palette functionality
       console.log('Command palette triggered');
     });
+    
+    // Apply initial editor settings
+    updateEditorOptions(editor);
+  };
+  
+  // Update editor options when settings change
+  const updateEditorOptions = (editor: any) => {
+    if (!editor) return;
+    
+    editor.updateOptions({
+      fontSize: editorSettings.fontSize,
+      fontFamily: editorSettings.fontFamily,
+      minimap: { enabled: editorSettings.minimap },
+      lineNumbers: editorSettings.lineNumbers ? 'on' : 'off',
+      wordWrap: editorSettings.wordWrap ? 'on' : 'off',
+      tabSize: editorSettings.tabSize,
+      autoClosingBrackets: editorSettings.autoClosingBrackets ? 'always' : 'never',
+      autoClosingQuotes: editorSettings.autoClosingBrackets ? 'always' : 'never',
+      autoIndent: editorSettings.autoIndent ? 'advanced' : 'none'
+    });
   };
   
   // Update editor settings when they change
   useEffect(() => {
     if (editorRef.current) {
-      const editor = editorRef.current;
-      editor.updateOptions({
-        fontSize: editorSettings.fontSize,
-        fontFamily: editorSettings.fontFamily,
-        minimap: { enabled: editorSettings.minimap },
-        lineNumbers: editorSettings.lineNumbers ? 'on' : 'off',
-        wordWrap: editorSettings.wordWrap ? 'on' : 'off',
-        tabSize: editorSettings.tabSize,
-        autoClosingBrackets: editorSettings.autoClosingBrackets ? 'always' : 'never',
-        autoClosingQuotes: editorSettings.autoClosingBrackets ? 'always' : 'never',
-        autoIndent: editorSettings.autoIndent ? 'advanced' : 'none'
-      });
+      updateEditorOptions(editorRef.current);
     }
   }, [editorSettings]);
   

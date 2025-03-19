@@ -45,9 +45,16 @@ export default function AppearanceSettings({ isOpen, onClose }: AppearanceSettin
     });
     onClose();
   };
+  
+  // Prevent event propagation to avoid issues with event bubbling
+  const handleSheetOpenChange = (open: boolean) => {
+    if (!open) {
+      onClose();
+    }
+  };
 
   return (
-    <Sheet open={isOpen} onOpenChange={onClose}>
+    <Sheet open={isOpen} onOpenChange={handleSheetOpenChange}>
       <SheetContent className="sm:max-w-md">
         <SheetHeader>
           <SheetTitle>Appearance Settings</SheetTitle>
@@ -137,10 +144,10 @@ export default function AppearanceSettings({ isOpen, onClose }: AppearanceSettin
           </div>
           
           <div className="flex justify-end space-x-2 pt-4">
-            <Button variant="outline" onClick={onClose}>
+            <Button variant="outline" onClick={onClose} type="button">
               Cancel
             </Button>
-            <Button onClick={handleSaveChanges}>
+            <Button onClick={handleSaveChanges} type="button">
               Save Changes
             </Button>
           </div>
