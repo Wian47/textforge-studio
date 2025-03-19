@@ -1,5 +1,5 @@
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useEditor } from '@/context/EditorContext';
 import { usePluginManager } from '@/plugins/PluginManager';
 import Editor, { OnMount } from '@monaco-editor/react';
@@ -9,6 +9,18 @@ export default function MonacoEditor() {
   const { activeFile, saveFile, theme } = useEditor();
   const { pluginAPI } = usePluginManager();
   const editorRef = useRef<any>(null);
+  
+  // Editor settings state
+  const [editorSettings, setEditorSettings] = useState({
+    fontSize: 14,
+    fontFamily: 'SF Mono, Menlo, Monaco, Consolas, monospace',
+    minimap: false,
+    lineNumbers: true,
+    wordWrap: false,
+    tabSize: 2,
+    autoClosingBrackets: true,
+    formatOnSave: true
+  });
   
   const handleEditorDidMount: OnMount = (editor, monaco) => {
     editorRef.current = editor;
@@ -34,6 +46,22 @@ export default function MonacoEditor() {
     });
   };
   
+  // Update editor settings when they change
+  useEffect(() => {
+    if (editorRef.current) {
+      const editor = editorRef.current;
+      editor.updateOptions({
+        fontSize: editorSettings.fontSize,
+        fontFamily: editorSettings.fontFamily,
+        minimap: { enabled: editorSettings.minimap },
+        lineNumbers: editorSettings.lineNumbers ? 'on' : 'off',
+        wordWrap: editorSettings.wordWrap ? 'on' : 'off',
+        tabSize: editorSettings.tabSize,
+        autoClosingBrackets: editorSettings.autoClosingBrackets ? 'always' : 'never'
+      });
+    }
+  }, [editorSettings]);
+  
   if (!activeFile) {
     return (
       <div className="flex-1 flex items-center justify-center text-muted-foreground">
@@ -54,23 +82,26 @@ export default function MonacoEditor() {
         theme={theme === 'dark' ? 'vs-dark' : 'vs-light'}
         onMount={handleEditorDidMount}
         options={{
-          fontSize: 14,
-          fontFamily: 'SF Mono, Menlo, Monaco, Consolas, monospace',
-          minimap: { enabled: false },
+          fontSize: editorSettings.fontSize,
+          fontFamily: editorSettings.fontFamily,
+          minimap: { enabled: editorSettings.minimap },
           scrollBeyondLastLine: false,
-          lineNumbers: 'on',
+          lineNumbers: editorSettings.lineNumbers ? 'on' : 'off',
           glyphMargin: false,
           folding: true,
           lineDecorationsWidth: 10,
           lineNumbersMinChars: 3,
           automaticLayout: true,
-          tabSize: 2,
+          tabSize: editorSettings.tabSize,
+          wordWrap: editorSettings.wordWrap ? 'on' : 'off',
           padding: { top: 10 },
           scrollbar: {
             useShadows: false,
             verticalScrollbarSize: 8,
             horizontalScrollbarSize: 8,
           },
+          autoClosingBrackets: editorSettings.autoClosingBrackets ? 'always' : 'never',
+          autoClosingQuotes: editorSettings.autoClosingBrackets ? 'always' : 'never',
         }}
         className={cn(
           "bg-editor-background text-editor-foreground rounded-md transition-colors duration-300",
