@@ -83,7 +83,8 @@ const ModalEditingPlugin: PluginDefinition = {
         if (api.editor) {
           editor = api.editor;
           clearInterval(checkEditorInterval);
-          activate(api);
+          // Call the plugin's own activate method again with the updated API
+          ModalEditingPlugin.activate(api);
         }
       }, 500);
     }
