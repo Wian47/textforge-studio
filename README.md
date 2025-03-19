@@ -1,5 +1,7 @@
 # TextForge Studio
 
+wian47.github.io/textforge-studio/
+
 ## About
 
 TextForge Studio is a web-based code editor with a modern interface. It provides a seamless coding experience with support for multiple languages, file management, and code execution.
@@ -22,26 +24,6 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
-
-## Getting Started
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory
-cd textforge-studio
-
-# Step 3: Install the necessary dependencies
-npm i
-
-# Step 4: Start the development server
-npm run dev
-```
 
 ## How to Use
 
