@@ -159,9 +159,19 @@ export default function MonacoEditor() {
   if (!activeFile) {
     return (
       <div className="flex-1 flex items-center justify-center text-muted-foreground">
-        <div className="text-center">
-          <p className="mb-2">No file is currently open</p>
-          <p className="text-sm">Select a file from the sidebar to start editing</p>
+        <div className="text-center max-w-md p-6">
+          <h3 className="text-lg font-medium mb-2">Welcome to TextForge Studio</h3>
+          <p className="mb-4">No file is currently open</p>
+          <p className="text-sm">Create a new file from the sidebar to get started coding</p>
+          <div className="mt-6 bg-muted/30 p-4 rounded-md text-left text-sm">
+            <p className="font-medium mb-2">Quick Tips:</p>
+            <ul className="list-disc pl-5 space-y-1">
+              <li>Right-click in the sidebar to create files and folders</li>
+              <li>Use the + button in the sidebar to create new items</li>
+              <li>Right-click on files to rename or delete them</li>
+              <li>Press Ctrl+O to search for files</li>
+            </ul>
+          </div>
         </div>
       </div>
     );

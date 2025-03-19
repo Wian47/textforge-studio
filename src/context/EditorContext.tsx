@@ -1,5 +1,7 @@
+
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { ExecutionResult } from '@/services/CodeRunner';
+import { generateId } from '@/lib/utils';
 
 export type CursorPosition = {
   lineNumber: number;
@@ -43,6 +45,10 @@ type EditorContextType = {
   setCursorPosition: (position: CursorPosition) => void;
   closeFile: (id: string) => void;
   setExecutionResult: (result: ExecutionResult | null) => void;
+  createFile: (name: string, parentId?: string) => void;
+  createFolder: (name: string, parentId?: string) => void;
+  deleteFile: (id: string) => void;
+  renameFile: (id: string, newName: string) => void;
 };
 
 const initialEditorSettings: EditorSettings = {
@@ -57,60 +63,14 @@ const initialEditorSettings: EditorSettings = {
   autoIndent: true
 };
 
-const initialFiles: FileType[] = [
-  {
-    id: '1',
-    name: 'main.js',
-    path: '/main.js',
-    content: '// Welcome to TextForge Studio\n\nconst greeting = "Hello, world!";\nconsole.log(greeting);\n\n// Start coding here',
-    language: 'javascript',
-    isDirectory: false,
-    isOpen: true,
-  },
-  {
-    id: '2',
-    name: 'styles.css',
-    path: '/styles.css',
-    content: '/* Main Styles */\n\nbody {\n  font-family: system-ui, -apple-system, sans-serif;\n  line-height: 1.5;\n  padding: 2rem;\n}\n\nh1 {\n  color: #3b82f6;\n}',
-    language: 'css',
-    isDirectory: false,
-    isOpen: false,
-  },
-  {
-    id: '3',
-    name: 'index.html',
-    path: '/index.html',
-    content: '<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n  <title>Document</title>\n  <link rel="stylesheet" href="styles.css">\n</head>\n<body>\n  <h1>Hello World</h1>\n  <script src="main.js"></script>\n</body>\n</html>',
-    language: 'html',
-    isDirectory: false,
-    isOpen: false,
-  },
-  {
-    id: '4',
-    name: 'projects',
-    path: '/projects',
-    content: '',
-    language: '',
-    isDirectory: true,
-    children: [
-      {
-        id: '5',
-        name: 'README.md',
-        path: '/projects/README.md',
-        content: '# Project Overview\n\nThis is a sample project to demonstrate the TextForge Studio editor capabilities.\n\n## Features\n\n- Syntax highlighting\n- File explorer\n- Theme switching\n',
-        language: 'markdown',
-        isDirectory: false,
-        isOpen: false,
-      }
-    ]
-  }
-];
+// Start with empty files array
+const initialFiles: FileType[] = [];
 
 const EditorContext = createContext<EditorContextType | undefined>(undefined);
 
 export function EditorProvider({ children }: { children: React.ReactNode }) {
   const [files, setFiles] = useState<FileType[]>(initialFiles);
-  const [activeFile, setActiveFile] = useState<FileType | null>(initialFiles[0]);
+  const [activeFile, setActiveFile] = useState<FileType | null>(null);
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('light');
   const [editorSettings, setEditorSettings] = useState<EditorSettings>(initialEditorSettings);
   const [cursorPosition, setCursorPosition] = useState<CursorPosition | null>({ lineNumber: 1, column: 1 });
@@ -161,6 +121,184 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
     });
     
     setActiveFile(file);
+  };
+  
+  // Function to create a new file
+  const createFile = (name: string, parentId?: string) => {
+    const newId = generateId();
+    const extension = name.split('.').pop()?.toLowerCase() || '';
+    let language = 'plaintext';
+    
+    // Determine language from file extension
+    if (extension === 'js') language = 'javascript';
+    else if (extension === 'ts') language = 'typescript';
+    else if (extension === 'jsx') language = 'javascript';
+    else if (extension === 'tsx') language = 'typescript';
+    else if (extension === 'css') language = 'css';
+    else if (extension === 'html') language = 'html';
+    else if (extension === 'json') language = 'json';
+    else if (extension === 'md') language = 'markdown';
+    else if (extension === 'py') language = 'python';
+    
+    const newFile: FileType = {
+      id: newId,
+      name,
+      path: parentId ? `/${name}` : `/${name}`,
+      content: '',
+      language,
+      isDirectory: false,
+      isOpen: true,
+    };
+    
+    if (!parentId) {
+      // Add to root
+      setFiles(prev => [...prev, newFile]);
+    } else {
+      // Add to specific folder
+      setFiles(prev => {
+        const addFileToFolder = (files: FileType[]): FileType[] => {
+          return files.map(file => {
+            if (file.id === parentId) {
+              return {
+                ...file,
+                children: [...(file.children || []), newFile]
+              };
+            }
+            if (file.children) {
+              return {
+                ...file,
+                children: addFileToFolder(file.children)
+              };
+            }
+            return file;
+          });
+        };
+        
+        return addFileToFolder(prev);
+      });
+    }
+    
+    // Set as active file
+    setActiveFile(newFile);
+  };
+  
+  // Function to create a new folder
+  const createFolder = (name: string, parentId?: string) => {
+    const newId = generateId();
+    
+    const newFolder: FileType = {
+      id: newId,
+      name,
+      path: parentId ? `/${name}` : `/${name}`,
+      content: '',
+      language: '',
+      isDirectory: true,
+      children: []
+    };
+    
+    if (!parentId) {
+      // Add to root
+      setFiles(prev => [...prev, newFolder]);
+    } else {
+      // Add to specific folder
+      setFiles(prev => {
+        const addFolderToFolder = (files: FileType[]): FileType[] => {
+          return files.map(file => {
+            if (file.id === parentId) {
+              return {
+                ...file,
+                children: [...(file.children || []), newFolder]
+              };
+            }
+            if (file.children) {
+              return {
+                ...file,
+                children: addFolderToFolder(file.children)
+              };
+            }
+            return file;
+          });
+        };
+        
+        return addFolderToFolder(prev);
+      });
+    }
+  };
+  
+  // Function to delete a file or folder
+  const deleteFile = (id: string) => {
+    // Close file if it's active
+    if (activeFile && activeFile.id === id) {
+      setActiveFile(null);
+    }
+    
+    setFiles(prev => {
+      const deleteFileById = (files: FileType[]): FileType[] => {
+        return files.filter(file => {
+          if (file.id === id) {
+            return false; // Remove this file
+          }
+          if (file.children) {
+            return {
+              ...file,
+              children: deleteFileById(file.children)
+            };
+          }
+          return true;
+        });
+      };
+      
+      return deleteFileById(prev);
+    });
+  };
+  
+  // Function to rename a file or folder
+  const renameFile = (id: string, newName: string) => {
+    setFiles(prev => {
+      const renameFileById = (files: FileType[]): FileType[] => {
+        return files.map(file => {
+          if (file.id === id) {
+            // Update active file if it's the one being renamed
+            if (activeFile && activeFile.id === id) {
+              setActiveFile({
+                ...file,
+                name: newName
+              });
+            }
+            
+            // Determine language if file extension changed
+            let language = file.language;
+            if (!file.isDirectory) {
+              const extension = newName.split('.').pop()?.toLowerCase() || '';
+              if (extension === 'js') language = 'javascript';
+              else if (extension === 'ts') language = 'typescript';
+              else if (extension === 'jsx') language = 'javascript';
+              else if (extension === 'tsx') language = 'typescript';
+              else if (extension === 'css') language = 'css';
+              else if (extension === 'html') language = 'html';
+              else if (extension === 'json') language = 'json';
+              else if (extension === 'md') language = 'markdown';
+              else if (extension === 'py') language = 'python';
+            }
+            
+            return {
+              ...file,
+              name: newName,
+              language
+            };
+          }
+          if (file.children) {
+            return {
+              ...file,
+              children: renameFileById(file.children)
+            };
+          }
+          return file;
+        });
+      };
+      
+      return renameFileById(prev);
+    });
   };
   
   const closeFile = (id: string) => {
@@ -242,7 +380,11 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
         updateEditorSettings,
         setCursorPosition,
         closeFile,
-        setExecutionResult
+        setExecutionResult,
+        createFile,
+        createFolder,
+        deleteFile,
+        renameFile
       }}
     >
       {children}
