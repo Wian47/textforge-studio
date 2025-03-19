@@ -36,8 +36,6 @@ jobs:
       - name: Prepare for deployment
         run: |
           cp dist/index.html dist/404.html
-          echo "textforge-studio.test" > dist/CNAME
-          cp -r public/* dist/ || echo "No public files to copy"
           touch dist/.nojekyll
 
       - name: Deploy to GitHub Pages
