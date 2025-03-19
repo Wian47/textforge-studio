@@ -101,25 +101,14 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
   const setActiveFileHandler = (file: FileType) => {
     if (file.isDirectory) return;
     
-    setFiles(prevFiles => {
-      const markFileOpen = (files: FileType[]): FileType[] => {
-        return files.map(f => {
-          if (f.id === file.id) {
-            return { ...f, isOpen: true };
-          }
-          if (f.children) {
-            return {
-              ...f,
-              children: markFileOpen(f.children)
-            };
-          }
-          return f;
-        });
-      };
-      
-      return markFileOpen(prevFiles);
+    const updatedFiles = files.map(f => {
+      if (f.id === file.id) {
+        return { ...f, isOpen: true };
+      }
+      return f;
     });
     
+    setFiles(updatedFiles);
     setActiveFile(file);
   };
   
@@ -141,6 +130,42 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
     }
   };
   
+  // Simple recursive function to add a file to a parent folder
+  const addFileToFolder = (filesArray: FileType[], parentId: string, newFile: FileType): FileType[] => {
+    return filesArray.map(file => {
+      if (file.id === parentId) {
+        return {
+          ...file,
+          children: [...(file.children || []), newFile]
+        };
+      }
+      
+      if (file.children) {
+        return {
+          ...file,
+          children: addFileToFolder(file.children, parentId, newFile)
+        };
+      }
+      
+      return file;
+    });
+  };
+  
+  // Simple recursive function to remove a file from the files array
+  const removeFile = (filesArray: FileType[], fileId: string): FileType[] => {
+    return filesArray.filter(file => {
+      if (file.id === fileId) {
+        return false;
+      }
+      
+      if (file.children) {
+        file.children = removeFile(file.children, fileId);
+      }
+      
+      return true;
+    });
+  };
+  
   // Function to create a new file - returns the ID of the new file
   const createFile = (name: string, parentId?: string): string => {
     const newId = generateId();
@@ -156,35 +181,13 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
       isOpen: false,
     };
     
-    setFiles(prevFiles => {
-      // If no parent, add to root
-      if (!parentId) {
-        return [...prevFiles, newFile];
-      }
-      
-      // Add to specific folder using recursion
-      const addToFolder = (files: FileType[]): FileType[] => {
-        return files.map(file => {
-          if (file.id === parentId) {
-            return {
-              ...file,
-              children: [...(file.children || []), newFile]
-            };
-          }
-          
-          if (file.children) {
-            return {
-              ...file,
-              children: addToFolder(file.children)
-            };
-          }
-          
-          return file;
-        });
-      };
-      
-      return addToFolder(prevFiles);
-    });
+    if (!parentId) {
+      // Add to root level
+      setFiles(prev => [...prev, newFile]);
+    } else {
+      // Add to folder
+      setFiles(prev => addFileToFolder([...prev], parentId, newFile));
+    }
     
     return newId;
   };
@@ -203,35 +206,13 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
       children: []
     };
     
-    setFiles(prevFiles => {
-      // If no parent, add to root
-      if (!parentId) {
-        return [...prevFiles, newFolder];
-      }
-      
-      // Add to specific folder using recursion
-      const addToFolder = (files: FileType[]): FileType[] => {
-        return files.map(file => {
-          if (file.id === parentId) {
-            return {
-              ...file,
-              children: [...(file.children || []), newFolder]
-            };
-          }
-          
-          if (file.children) {
-            return {
-              ...file,
-              children: addToFolder(file.children)
-            };
-          }
-          
-          return file;
-        });
-      };
-      
-      return addToFolder(prevFiles);
-    });
+    if (!parentId) {
+      // Add to root level
+      setFiles(prev => [...prev, newFolder]);
+    } else {
+      // Add to folder
+      setFiles(prev => addFileToFolder([...prev], parentId, newFolder));
+    }
     
     return newId;
   };
@@ -243,94 +224,85 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
       setActiveFile(null);
     }
     
-    setFiles(prevFiles => {
-      const removeFile = (files: FileType[]): FileType[] => {
-        return files.filter(file => {
-          // If this is the file to delete, filter it out
-          if (file.id === id) {
-            return false;
-          }
-          
-          // If this is a directory, process its children
-          if (file.children) {
-            file.children = removeFile(file.children);
-          }
-          
-          return true;
-        });
-      };
-      
-      return removeFile([...prevFiles]);
-    });
+    // Remove the file from the files array
+    setFiles(prev => removeFile([...prev], id));
   };
   
   // Function to rename a file or folder
   const renameFile = (id: string, newName: string) => {
     setFiles(prevFiles => {
-      const rename = (files: FileType[]): FileType[] => {
-        return files.map(file => {
-          if (file.id === id) {
-            const updatedFile = { ...file, name: newName };
-            
-            // Update language if file extension changed
-            if (!file.isDirectory) {
-              updatedFile.language = getLanguageFromExtension(newName);
-            }
-            
-            // Update active file if it's being renamed
-            if (activeFile && activeFile.id === id) {
-              setActiveFile(updatedFile);
-            }
-            
-            return updatedFile;
+      const updatedFiles = prevFiles.map(file => {
+        if (file.id === id) {
+          const updatedFile = { ...file, name: newName };
+          
+          // Update language if file extension changed
+          if (!file.isDirectory) {
+            updatedFile.language = getLanguageFromExtension(newName);
           }
           
-          if (file.children) {
-            return {
-              ...file,
-              children: rename(file.children)
-            };
-          }
-          
-          return file;
-        });
-      };
+          return updatedFile;
+        }
+        
+        if (file.children) {
+          return {
+            ...file,
+            children: file.children.map(child => {
+              if (child.id === id) {
+                const updatedChild = { ...child, name: newName };
+                
+                // Update language if file extension changed
+                if (!child.isDirectory) {
+                  updatedChild.language = getLanguageFromExtension(newName);
+                }
+                
+                // Update active file if it's being renamed
+                if (activeFile && activeFile.id === id) {
+                  setActiveFile(updatedChild);
+                }
+                
+                return updatedChild;
+              }
+              
+              return child;
+            })
+          };
+        }
+        
+        return file;
+      });
       
-      return rename([...prevFiles]);
+      return updatedFiles;
     });
   };
   
   const closeFile = (id: string) => {
-    setFiles(prevFiles => {
-      const updateFiles = (files: FileType[]): FileType[] => {
-        return files.map(file => {
-          if (file.id === id) {
-            return { ...file, isOpen: false };
-          }
-          if (file.children) {
-            return {
-              ...file,
-              children: updateFiles(file.children)
-            };
-          }
-          return file;
-        });
-      };
+    setFiles(prev => {
+      const updatedFiles = prev.map(file => {
+        if (file.id === id) {
+          return { ...file, isOpen: false };
+        }
+        
+        if (file.children) {
+          return {
+            ...file,
+            children: file.children.map(child => {
+              if (child.id === id) {
+                return { ...child, isOpen: false };
+              }
+              return child;
+            })
+          };
+        }
+        
+        return file;
+      });
       
-      return updateFiles([...prevFiles]);
+      return updatedFiles;
     });
     
     if (activeFile && activeFile.id === id) {
-      const flattenFiles = (fileTree: FileType[]): FileType[] => {
-        return fileTree.reduce((acc, file) => {
-          if (file.isDirectory && file.children) {
-            return [...acc, ...flattenFiles(file.children)];
-          }
-          return [...acc, file];
-        }, [] as FileType[]);
-      };
-      
-      const openFiles = flattenFiles(files).filter(file => file.isOpen && file.id !== id);
+      // Find another open file to activate
+      const openFiles = files.filter(file => file.isOpen && file.id !== id);
       if (openFiles.length > 0) {
         setActiveFile(openFiles[0]);
       } else {
@@ -340,23 +312,28 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
   };
 
   const saveFile = (id: string, content: string) => {
-    setFiles(prevFiles => {
-      const updateFileContent = (files: FileType[]): FileType[] => {
-        return files.map(file => {
-          if (file.id === id) {
-            return { ...file, content };
-          }
-          if (file.children) {
-            return {
-              ...file,
-              children: updateFileContent(file.children)
-            };
-          }
-          return file;
-        });
-      };
+    setFiles(prev => {
+      const updatedFiles = prev.map(file => {
+        if (file.id === id) {
+          return { ...file, content };
+        }
+        
+        if (file.children) {
+          return {
+            ...file,
+            children: file.children.map(child => {
+              if (child.id === id) {
+                return { ...child, content };
+              }
+              return child;
+            })
+          };
+        }
+        
+        return file;
+      });
       
-      return updateFileContent([...prevFiles]);
+      return updatedFiles;
     });
     
     if (activeFile && activeFile.id === id) {

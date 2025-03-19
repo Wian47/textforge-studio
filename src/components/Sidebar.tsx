@@ -11,8 +11,7 @@ import {
   FilePlus, 
   FolderPlus,
   Trash,
-  Edit,
-  MoreVertical
+  Edit
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { 
@@ -40,12 +39,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 
-type FileItemProps = {
-  file: FileType;
-  level: number;
-};
-
-const FileItem = ({ file, level }: FileItemProps) => {
+// Simplified FileItem component
+const FileItem = ({ file, level }: { file: FileType; level: number }) => {
   const { activeFile, setActiveFile, deleteFile, renameFile, createFile, createFolder } = useEditor();
   const [expanded, setExpanded] = useState(true);
   const [isRenaming, setIsRenaming] = useState(false);
@@ -54,6 +49,7 @@ const FileItem = ({ file, level }: FileItemProps) => {
   
   const isActive = activeFile?.id === file.id;
   
+  // Handle file/folder click
   const handleFileClick = () => {
     if (file.isDirectory) {
       setExpanded(!expanded);
@@ -62,6 +58,7 @@ const FileItem = ({ file, level }: FileItemProps) => {
     }
   };
 
+  // Handle delete action
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     deleteFile(file.id);
@@ -71,12 +68,14 @@ const FileItem = ({ file, level }: FileItemProps) => {
     });
   };
 
+  // Handle rename action
   const handleRenameClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsRenaming(true);
     setNewName(file.name);
   };
 
+  // Handle rename form submission
   const handleRenameSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (newName.trim() === '') return;
@@ -89,29 +88,49 @@ const FileItem = ({ file, level }: FileItemProps) => {
     });
   };
   
+  // Handle creating a new file in a folder
   const handleNewFile = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    
     if (file.isDirectory) {
       const fileName = `newfile.js`;
-      createFile(fileName, file.id);
-      toast({
-        title: "File created",
-        description: `${fileName} has been created`
-      });
+      try {
+        createFile(fileName, file.id);
+        toast({
+          title: "File created",
+          description: `${fileName} has been created`
+        });
+      } catch (error) {
+        toast({
+          title: "Error creating file",
+          description: error instanceof Error ? error.message : "An error occurred",
+          variant: "destructive"
+        });
+      }
     }
   };
   
+  // Handle creating a new folder in a folder
   const handleNewFolder = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    
     if (file.isDirectory) {
       const folderName = 'New Folder';
-      createFolder(folderName, file.id);
-      toast({
-        title: "Folder created",
-        description: `${folderName} has been created`
-      });
+      try {
+        createFolder(folderName, file.id);
+        toast({
+          title: "Folder created",
+          description: `${folderName} has been created`
+        });
+      } catch (error) {
+        toast({
+          title: "Error creating folder",
+          description: error instanceof Error ? error.message : "An error occurred",
+          variant: "destructive"
+        });
+      }
     }
   };
   
@@ -153,7 +172,7 @@ const FileItem = ({ file, level }: FileItemProps) => {
             </div>
           )}
           
-          {file.isDirectory && expanded && file.children && (
+          {file.isDirectory && expanded && file.children && file.children.length > 0 && (
             <div className="animate-in">
               {file.children.map((child) => (
                 <FileItem key={child.id} file={child} level={level + 1} />
@@ -206,6 +225,7 @@ export default function Sidebar() {
   const [newItemName, setNewItemName] = useState('');
   const { toast } = useToast();
   
+  // Handle creating a new item (file or folder)
   const handleCreateItem = () => {
     if (newItemName.trim() === '') return;
     
@@ -235,12 +255,14 @@ export default function Sidebar() {
     }
   };
   
+  // Open create file dialog
   const openCreateFileDialog = () => {
     setDialogMode('file');
     setNewItemName('newfile.js');
     setIsDialogOpen(true);
   };
   
+  // Open create folder dialog
   const openCreateFolderDialog = () => {
     setDialogMode('folder');
     setNewItemName('New Folder');
