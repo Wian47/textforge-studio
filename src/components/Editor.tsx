@@ -6,7 +6,7 @@ import Editor, { OnMount } from '@monaco-editor/react';
 import { cn } from '@/lib/utils';
 
 export default function MonacoEditor() {
-  const { activeFile, saveFile, theme, editorSettings } = useEditor();
+  const { activeFile, saveFile, theme, editorSettings, setCursorPosition } = useEditor();
   const { pluginAPI } = usePluginManager();
   const editorRef = useRef<any>(null);
   
@@ -27,10 +27,45 @@ export default function MonacoEditor() {
       }
     });
     
+    // Track cursor position
+    editor.onDidChangeCursorPosition((e) => {
+      setCursorPosition({
+        lineNumber: e.position.lineNumber,
+        column: e.position.column
+      });
+    });
+    
     // Add keyboard shortcuts for modal editing
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyP, () => {
       // Command palette functionality
       console.log('Command palette triggered');
+    });
+    
+    // Configure editor highlighting
+    monaco.editor.defineTheme('vscode-dark', {
+      base: 'vs-dark',
+      inherit: true,
+      rules: [],
+      colors: {
+        'editor.background': '#1e1e1e',
+        'editor.foreground': '#d4d4d4',
+        'editor.lineHighlightBackground': '#2a2d2e',
+        'editorCursor.foreground': '#d4d4d4',
+        'editorWhitespace.foreground': '#3b3b3b'
+      }
+    });
+    
+    monaco.editor.defineTheme('vscode-light', {
+      base: 'vs',
+      inherit: true,
+      rules: [],
+      colors: {
+        'editor.background': '#ffffff',
+        'editor.foreground': '#333333',
+        'editor.lineHighlightBackground': '#f3f3f3',
+        'editorCursor.foreground': '#333333',
+        'editorWhitespace.foreground': '#d4d4d4'
+      }
     });
     
     // Apply initial editor settings
@@ -50,7 +85,15 @@ export default function MonacoEditor() {
       tabSize: editorSettings.tabSize,
       autoClosingBrackets: editorSettings.autoClosingBrackets ? 'always' : 'never',
       autoClosingQuotes: editorSettings.autoClosingBrackets ? 'always' : 'never',
-      autoIndent: editorSettings.autoIndent ? 'advanced' : 'none'
+      autoIndent: editorSettings.autoIndent ? 'advanced' : 'none',
+      renderLineHighlight: 'line',
+      cursorBlinking: 'smooth',
+      renderWhitespace: 'selection',
+      renderIndentGuides: true,
+      codeLens: true,
+      contextmenu: true,
+      scrollBeyondLastLine: false,
+      smoothScrolling: true
     });
   };
   
@@ -78,7 +121,7 @@ export default function MonacoEditor() {
         height="100%"
         language={activeFile.language}
         value={activeFile.content}
-        theme={theme === 'dark' ? 'vs-dark' : 'vs-light'}
+        theme={theme === 'dark' ? 'vscode-dark' : 'vscode-light'}
         onMount={handleEditorDidMount}
         options={{
           fontSize: editorSettings.fontSize,
@@ -86,7 +129,7 @@ export default function MonacoEditor() {
           minimap: { enabled: editorSettings.minimap },
           scrollBeyondLastLine: false,
           lineNumbers: editorSettings.lineNumbers ? 'on' : 'off',
-          glyphMargin: false,
+          glyphMargin: true,
           folding: true,
           lineDecorationsWidth: 10,
           lineNumbersMinChars: 3,
@@ -101,7 +144,15 @@ export default function MonacoEditor() {
           },
           autoClosingBrackets: editorSettings.autoClosingBrackets ? 'always' : 'never',
           autoClosingQuotes: editorSettings.autoClosingBrackets ? 'always' : 'never',
-          autoIndent: editorSettings.autoIndent ? 'advanced' : 'none'
+          autoIndent: editorSettings.autoIndent ? 'advanced' : 'none',
+          renderLineHighlight: 'line',
+          cursorBlinking: 'smooth',
+          renderWhitespace: 'selection',
+          renderIndentGuides: true,
+          codeLens: true,
+          contextmenu: true,
+          smoothScrolling: true,
+          links: true
         }}
         className={cn(
           "bg-editor-background text-editor-foreground rounded-md transition-colors duration-300",

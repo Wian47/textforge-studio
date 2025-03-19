@@ -3,9 +3,11 @@ import React from 'react';
 import { useEditor } from '@/context/EditorContext';
 import { usePluginManager } from '@/plugins/PluginManager';
 import { cn } from '@/lib/utils';
+import { FileType } from '@/context/EditorContext';
+import { Hash, GitBranch, AlertCircle, Check, Wifi } from 'lucide-react';
 
 export default function StatusBar() {
-  const { activeFile } = useEditor();
+  const { activeFile, editorSettings, cursorPosition } = useEditor();
   const { loadedPlugins, plugins, statusBarItems } = usePluginManager();
   
   // Get status bar items from the plugin manager
@@ -24,6 +26,12 @@ export default function StatusBar() {
         {item.element}
       </div>
     ));
+    
+  // Get file extension
+  const getFileExtension = (file: FileType | null) => {
+    if (!file) return '';
+    return file.name.split('.').pop()?.toUpperCase() || '';
+  };
   
   return (
     <div className={cn(
@@ -32,16 +40,27 @@ export default function StatusBar() {
     )}>
       <div className="flex items-center">
         {leftItems}
-        <span className="ml-2">
-          {activeFile ? activeFile.language.toUpperCase() : 'No file open'}
-        </span>
-        <span className="ml-4">UTF-8</span>
-        <span className="ml-4">{loadedPlugins.length} plugins active</span>
+        <div className="flex items-center mr-4 text-green-500">
+          <Check size={12} className="mr-1" />
+          <span>No Problems</span>
+        </div>
+        <div className="flex items-center mr-4">
+          <GitBranch size={12} className="mr-1" />
+          <span>main</span>
+        </div>
+        <div className="flex items-center">
+          <Wifi size={12} className="mr-1" />
+          <span>Connected</span>
+        </div>
       </div>
       <div className="flex items-center">
         {rightItems}
-        <span className="ml-4">Ln 1, Col 1</span>
-        <span className="ml-4">Spaces: 2</span>
+        <span className="ml-4">{getFileExtension(activeFile)}</span>
+        <span className="ml-4">UTF-8</span>
+        <span className="ml-4">
+          Ln {cursorPosition?.lineNumber || 1}, Col {cursorPosition?.column || 1}
+        </span>
+        <span className="ml-4">Spaces: {editorSettings.tabSize}</span>
       </div>
     </div>
   );
