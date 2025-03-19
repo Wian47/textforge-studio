@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useEditor, FileType } from '@/context/EditorContext';
 import { 
   ChevronDown, 
@@ -209,22 +209,30 @@ export default function Sidebar() {
   const handleCreateItem = () => {
     if (newItemName.trim() === '') return;
     
-    if (dialogMode === 'file') {
-      createFile(newItemName);
+    try {
+      if (dialogMode === 'file') {
+        createFile(newItemName);
+        toast({
+          title: "File created",
+          description: `${newItemName} has been created`
+        });
+      } else {
+        createFolder(newItemName);
+        toast({
+          title: "Folder created",
+          description: `${newItemName} has been created`
+        });
+      }
+      
+      setIsDialogOpen(false);
+      setNewItemName('');
+    } catch (error) {
       toast({
-        title: "File created",
-        description: `${newItemName} has been created`
-      });
-    } else {
-      createFolder(newItemName);
-      toast({
-        title: "Folder created",
-        description: `${newItemName} has been created`
+        title: "Error creating item",
+        description: error instanceof Error ? error.message : "Unknown error occurred",
+        variant: "destructive"
       });
     }
-    
-    setIsDialogOpen(false);
-    setNewItemName('');
   };
   
   const openCreateFileDialog = () => {
