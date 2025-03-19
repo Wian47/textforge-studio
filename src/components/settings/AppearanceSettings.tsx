@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useEditor } from '@/context/EditorContext';
 import { Sun, Moon, Monitor as DisplayIcon } from 'lucide-react';
 import { 
@@ -16,6 +16,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
+import { toast } from '@/components/ui/use-toast';
 
 interface AppearanceSettingsProps {
   isOpen: boolean;
@@ -23,17 +24,26 @@ interface AppearanceSettingsProps {
 }
 
 export default function AppearanceSettings({ isOpen, onClose }: AppearanceSettingsProps) {
-  const { theme, toggleTheme } = useEditor();
-  const [fontSize, setFontSize] = useState(14);
-  const [fontFamily, setFontFamily] = useState('SF Mono');
-  const [showMinimap, setShowMinimap] = useState(false);
+  const { theme, toggleTheme, editorSettings, updateEditorSettings } = useEditor();
   
   const handleFontSizeChange = (value: number[]) => {
-    setFontSize(value[0]);
+    updateEditorSettings({ fontSize: value[0] });
+  };
+  
+  const handleFontFamilyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    updateEditorSettings({ fontFamily: e.target.value });
   };
   
   const handleMinimapToggle = (checked: boolean) => {
-    setShowMinimap(checked);
+    updateEditorSettings({ minimap: checked });
+  };
+  
+  const handleSaveChanges = () => {
+    toast({
+      title: "Settings Saved",
+      description: "Your appearance settings have been updated."
+    });
+    onClose();
   };
 
   return (
@@ -49,7 +59,7 @@ export default function AppearanceSettings({ isOpen, onClose }: AppearanceSettin
         <div className="py-6 space-y-6">
           <div className="space-y-2">
             <h4 className="text-sm font-medium">Theme</h4>
-            <RadioGroup defaultValue={theme} className="grid grid-cols-3 gap-4" onValueChange={toggleTheme}>
+            <RadioGroup defaultValue={theme} className="grid grid-cols-3 gap-4" onValueChange={(value) => toggleTheme(value as 'light' | 'dark' | 'system')}>
               <div>
                 <RadioGroupItem value="light" id="light" className="peer sr-only" />
                 <Label
@@ -89,13 +99,13 @@ export default function AppearanceSettings({ isOpen, onClose }: AppearanceSettin
           
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="font-size">Font Size: {fontSize}px</Label>
+              <Label htmlFor="font-size">Font Size: {editorSettings.fontSize}px</Label>
               <Slider
                 id="font-size"
                 min={10}
                 max={24}
                 step={1}
-                defaultValue={[fontSize]}
+                value={[editorSettings.fontSize]}
                 onValueChange={handleFontSizeChange}
               />
             </div>
@@ -105,8 +115,8 @@ export default function AppearanceSettings({ isOpen, onClose }: AppearanceSettin
               <select
                 id="font-family"
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                value={fontFamily}
-                onChange={(e) => setFontFamily(e.target.value)}
+                value={editorSettings.fontFamily.split(',')[0]}
+                onChange={handleFontFamilyChange}
               >
                 <option value="SF Mono">SF Mono</option>
                 <option value="Menlo">Menlo</option>
@@ -120,19 +130,19 @@ export default function AppearanceSettings({ isOpen, onClose }: AppearanceSettin
               <Label htmlFor="show-minimap">Show Minimap</Label>
               <Switch
                 id="show-minimap"
-                checked={showMinimap}
+                checked={editorSettings.minimap}
                 onCheckedChange={handleMinimapToggle}
               />
             </div>
           </div>
           
           <div className="flex justify-end space-x-2 pt-4">
-            <SheetClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </SheetClose>
-            <SheetClose asChild>
-              <Button>Save Changes</Button>
-            </SheetClose>
+            <Button variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveChanges}>
+              Save Changes
+            </Button>
           </div>
         </div>
       </SheetContent>

@@ -1,19 +1,19 @@
 
-import React, { useState } from 'react';
+import React from 'react';
+import { useEditor } from '@/context/EditorContext';
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetDescription,
-  SheetClose
+  SheetDescription
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Slider } from '@/components/ui/slider';
-import { Input } from '@/components/ui/input';
+import { toast } from '@/components/ui/use-toast';
 
 interface EditorOptionsSettingsProps {
   isOpen: boolean;
@@ -21,16 +21,18 @@ interface EditorOptionsSettingsProps {
 }
 
 export default function EditorOptionsSettings({ isOpen, onClose }: EditorOptionsSettingsProps) {
-  const [tabSize, setTabSize] = useState(2);
-  const [wordWrap, setWordWrap] = useState(false);
-  const [lineNumbers, setLineNumbers] = useState(true);
-  const [autoClosingBrackets, setAutoClosingBrackets] = useState(true);
-  const [autoIndent, setAutoIndent] = useState(true);
-  const [formatOnSave, setFormatOnSave] = useState(true);
-  const [indentSize, setIndentSize] = useState(2);
+  const { editorSettings, updateEditorSettings } = useEditor();
   
   const handleIndentSizeChange = (value: number[]) => {
-    setIndentSize(value[0]);
+    updateEditorSettings({ tabSize: value[0] });
+  };
+  
+  const handleSaveChanges = () => {
+    toast({
+      title: "Settings Saved",
+      description: "Your editor settings have been updated."
+    });
+    onClose();
   };
 
   return (
@@ -49,8 +51,8 @@ export default function EditorOptionsSettings({ isOpen, onClose }: EditorOptions
               <Label htmlFor="word-wrap">Word Wrap</Label>
               <Switch
                 id="word-wrap"
-                checked={wordWrap}
-                onCheckedChange={setWordWrap}
+                checked={editorSettings.wordWrap}
+                onCheckedChange={(checked) => updateEditorSettings({ wordWrap: checked })}
               />
             </div>
             
@@ -58,8 +60,8 @@ export default function EditorOptionsSettings({ isOpen, onClose }: EditorOptions
               <Label htmlFor="line-numbers">Show Line Numbers</Label>
               <Switch
                 id="line-numbers"
-                checked={lineNumbers}
-                onCheckedChange={setLineNumbers}
+                checked={editorSettings.lineNumbers}
+                onCheckedChange={(checked) => updateEditorSettings({ lineNumbers: checked })}
               />
             </div>
             
@@ -67,8 +69,8 @@ export default function EditorOptionsSettings({ isOpen, onClose }: EditorOptions
               <Label htmlFor="auto-brackets">Auto Closing Brackets</Label>
               <Switch
                 id="auto-brackets"
-                checked={autoClosingBrackets}
-                onCheckedChange={setAutoClosingBrackets}
+                checked={editorSettings.autoClosingBrackets}
+                onCheckedChange={(checked) => updateEditorSettings({ autoClosingBrackets: checked })}
               />
             </div>
             
@@ -76,8 +78,8 @@ export default function EditorOptionsSettings({ isOpen, onClose }: EditorOptions
               <Label htmlFor="auto-indent">Auto Indent</Label>
               <Switch
                 id="auto-indent"
-                checked={autoIndent}
-                onCheckedChange={setAutoIndent}
+                checked={editorSettings.autoIndent}
+                onCheckedChange={(checked) => updateEditorSettings({ autoIndent: checked })}
               />
             </div>
             
@@ -85,8 +87,8 @@ export default function EditorOptionsSettings({ isOpen, onClose }: EditorOptions
               <Label htmlFor="format-save">Format on Save</Label>
               <Switch
                 id="format-save"
-                checked={formatOnSave}
-                onCheckedChange={setFormatOnSave}
+                checked={editorSettings.formatOnSave}
+                onCheckedChange={(checked) => updateEditorSettings({ formatOnSave: checked })}
               />
             </div>
           </div>
@@ -95,13 +97,13 @@ export default function EditorOptionsSettings({ isOpen, onClose }: EditorOptions
           
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="tab-size">Tab Size: {indentSize}</Label>
+              <Label htmlFor="tab-size">Tab Size: {editorSettings.tabSize}</Label>
               <Slider
                 id="tab-size"
                 min={1}
                 max={8}
                 step={1}
-                defaultValue={[indentSize]}
+                value={[editorSettings.tabSize]}
                 onValueChange={handleIndentSizeChange}
               />
             </div>
@@ -122,12 +124,12 @@ export default function EditorOptionsSettings({ isOpen, onClose }: EditorOptions
           </div>
           
           <div className="flex justify-end space-x-2 pt-4">
-            <SheetClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </SheetClose>
-            <SheetClose asChild>
-              <Button>Save Changes</Button>
-            </SheetClose>
+            <Button variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveChanges}>
+              Save Changes
+            </Button>
           </div>
         </div>
       </SheetContent>

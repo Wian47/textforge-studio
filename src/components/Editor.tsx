@@ -1,26 +1,14 @@
 
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useEditor } from '@/context/EditorContext';
 import { usePluginManager } from '@/plugins/PluginManager';
 import Editor, { OnMount } from '@monaco-editor/react';
 import { cn } from '@/lib/utils';
 
 export default function MonacoEditor() {
-  const { activeFile, saveFile, theme } = useEditor();
+  const { activeFile, saveFile, theme, editorSettings } = useEditor();
   const { pluginAPI } = usePluginManager();
   const editorRef = useRef<any>(null);
-  
-  // Editor settings state
-  const [editorSettings, setEditorSettings] = useState({
-    fontSize: 14,
-    fontFamily: 'SF Mono, Menlo, Monaco, Consolas, monospace',
-    minimap: false,
-    lineNumbers: true,
-    wordWrap: false,
-    tabSize: 2,
-    autoClosingBrackets: true,
-    formatOnSave: true
-  });
   
   const handleEditorDidMount: OnMount = (editor, monaco) => {
     editorRef.current = editor;
@@ -57,7 +45,9 @@ export default function MonacoEditor() {
         lineNumbers: editorSettings.lineNumbers ? 'on' : 'off',
         wordWrap: editorSettings.wordWrap ? 'on' : 'off',
         tabSize: editorSettings.tabSize,
-        autoClosingBrackets: editorSettings.autoClosingBrackets ? 'always' : 'never'
+        autoClosingBrackets: editorSettings.autoClosingBrackets ? 'always' : 'never',
+        autoClosingQuotes: editorSettings.autoClosingBrackets ? 'always' : 'never',
+        autoIndent: editorSettings.autoIndent ? 'advanced' : 'none'
       });
     }
   }, [editorSettings]);
@@ -102,6 +92,7 @@ export default function MonacoEditor() {
           },
           autoClosingBrackets: editorSettings.autoClosingBrackets ? 'always' : 'never',
           autoClosingQuotes: editorSettings.autoClosingBrackets ? 'always' : 'never',
+          autoIndent: editorSettings.autoIndent ? 'advanced' : 'none'
         }}
         className={cn(
           "bg-editor-background text-editor-foreground rounded-md transition-colors duration-300",

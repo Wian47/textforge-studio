@@ -11,13 +11,39 @@ export type FileType = {
   children?: FileType[];
 };
 
+export type EditorSettings = {
+  fontSize: number;
+  fontFamily: string;
+  minimap: boolean;
+  lineNumbers: boolean;
+  wordWrap: boolean;
+  tabSize: number;
+  autoClosingBrackets: boolean;
+  formatOnSave: boolean;
+  autoIndent: boolean;
+};
+
 type EditorContextType = {
   files: FileType[];
   activeFile: FileType | null;
-  theme: 'light' | 'dark';
+  theme: 'light' | 'dark' | 'system';
+  editorSettings: EditorSettings;
   setActiveFile: (file: FileType) => void;
-  toggleTheme: () => void;
+  toggleTheme: (newTheme: 'light' | 'dark' | 'system') => void;
   saveFile: (id: string, content: string) => void;
+  updateEditorSettings: (settings: Partial<EditorSettings>) => void;
+};
+
+const initialEditorSettings: EditorSettings = {
+  fontSize: 14,
+  fontFamily: 'SF Mono, Menlo, Monaco, Consolas, monospace',
+  minimap: false,
+  lineNumbers: true,
+  wordWrap: false,
+  tabSize: 2,
+  autoClosingBrackets: true,
+  formatOnSave: true,
+  autoIndent: true
 };
 
 const initialFiles: FileType[] = [
@@ -70,7 +96,8 @@ const EditorContext = createContext<EditorContextType | undefined>(undefined);
 export function EditorProvider({ children }: { children: React.ReactNode }) {
   const [files, setFiles] = useState<FileType[]>(initialFiles);
   const [activeFile, setActiveFile] = useState<FileType | null>(initialFiles[0]);
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('light');
+  const [editorSettings, setEditorSettings] = useState<EditorSettings>(initialEditorSettings);
 
   // Check for user's preferred color scheme
   useEffect(() => {
@@ -81,9 +108,18 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const toggleTheme = () => {
-    setTheme(theme === 'light' ? 'dark' : 'light');
-    document.documentElement.classList.toggle('dark');
+  const toggleTheme = (newTheme: 'light' | 'dark' | 'system') => {
+    setTheme(newTheme);
+    
+    if (newTheme === 'dark' || (newTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  };
+
+  const updateEditorSettings = (newSettings: Partial<EditorSettings>) => {
+    setEditorSettings(prev => ({ ...prev, ...newSettings }));
   };
 
   const saveFile = (id: string, content: string) => {
@@ -117,9 +153,11 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
         files, 
         activeFile, 
         theme,
+        editorSettings,
         setActiveFile, 
         toggleTheme,
-        saveFile
+        saveFile,
+        updateEditorSettings
       }}
     >
       {children}
