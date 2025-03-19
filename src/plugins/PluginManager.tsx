@@ -27,6 +27,8 @@ type PluginManagerContextType = {
   deactivatePlugin: (id: string) => void;
   isPluginActive: (id: string) => boolean;
   pluginAPI: PluginAPI | null;
+  statusBarItems: Record<string, { element: React.ReactNode, position: 'left' | 'right' }>;
+  commands: Record<string, () => void>;
 };
 
 const PluginManagerContext = createContext<PluginManagerContextType | undefined>(undefined);
@@ -101,6 +103,8 @@ export function PluginManagerProvider({ children }: { children: React.ReactNode 
         deactivatePlugin,
         isPluginActive,
         pluginAPI,
+        statusBarItems,
+        commands
       }}
     >
       {children}
