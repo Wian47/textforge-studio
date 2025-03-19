@@ -36,11 +36,11 @@ export default function EditorOptionsSettings({ isOpen, onClose }: EditorOptions
     onClose();
   };
 
-  // If not open, don't render the component at all
+  // If not open, don't render anything
   if (!isOpen) return null;
 
   return (
-    <Sheet open={true} onOpenChange={(open) => !open && onClose()}>
+    <Sheet open={isOpen} onOpenChange={() => onClose()}>
       <SheetContent className="sm:max-w-md">
         <SheetHeader>
           <SheetTitle>Editor Options</SheetTitle>
