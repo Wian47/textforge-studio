@@ -1,13 +1,25 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import React from 'react';
+import { EditorProvider } from '@/context/EditorContext';
+import Header from '@/components/Header';
+import Sidebar from '@/components/Sidebar';
+import MonacoEditor from '@/components/Editor';
+import StatusBar from '@/components/StatusBar';
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
+    <EditorProvider>
+      <div className="flex flex-col h-screen w-full overflow-hidden">
+        <Header />
+        <div className="flex-1 flex overflow-hidden">
+          <Sidebar />
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <MonacoEditor />
+          </div>
+        </div>
+        <StatusBar />
       </div>
-    </div>
+    </EditorProvider>
   );
 };
 
