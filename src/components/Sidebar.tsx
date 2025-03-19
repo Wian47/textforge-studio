@@ -33,7 +33,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter
+  DialogFooter,
+  DialogDescription
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -45,7 +46,7 @@ type FileItemProps = {
 };
 
 const FileItem = ({ file, level }: FileItemProps) => {
-  const { activeFile, setActiveFile, deleteFile, renameFile } = useEditor();
+  const { activeFile, setActiveFile, deleteFile, renameFile, createFile, createFolder } = useEditor();
   const [expanded, setExpanded] = useState(true);
   const [isRenaming, setIsRenaming] = useState(false);
   const [newName, setNewName] = useState(file.name);
@@ -86,6 +87,32 @@ const FileItem = ({ file, level }: FileItemProps) => {
       title: "Renamed successfully",
       description: `Renamed to ${newName}`
     });
+  };
+  
+  const handleNewFile = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (file.isDirectory) {
+      const fileName = `newfile.js`;
+      createFile(fileName, file.id);
+      toast({
+        title: "File created",
+        description: `${fileName} has been created`
+      });
+    }
+  };
+  
+  const handleNewFolder = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (file.isDirectory) {
+      const folderName = 'New Folder';
+      createFolder(folderName, file.id);
+      toast({
+        title: "Folder created",
+        description: `${folderName} has been created`
+      });
+    }
   };
   
   return (
@@ -148,29 +175,11 @@ const FileItem = ({ file, level }: FileItemProps) => {
               {expanded ? 'Collapse' : 'Expand'}
             </ContextMenuItem>
             <ContextMenuSeparator />
-            <ContextMenuItem onClick={(e) => {
-              e.preventDefault();
-              const parentId = file.id;
-              const fileName = `newfile.js`;
-              useEditor().createFile(fileName, parentId);
-              toast({
-                title: "File created",
-                description: `${fileName} has been created`
-              });
-            }}>
+            <ContextMenuItem onClick={handleNewFile}>
               <FilePlus size={14} className="mr-2" />
               New File
             </ContextMenuItem>
-            <ContextMenuItem onClick={(e) => {
-              e.preventDefault();
-              const parentId = file.id;
-              const folderName = 'New Folder';
-              useEditor().createFolder(folderName, parentId);
-              toast({
-                title: "Folder created",
-                description: `${folderName} has been created`
-              });
-            }}>
+            <ContextMenuItem onClick={handleNewFolder}>
               <FolderPlus size={14} className="mr-2" />
               New Folder
             </ContextMenuItem>
@@ -272,6 +281,9 @@ export default function Sidebar() {
             <DialogTitle>
               {dialogMode === 'file' ? 'Create New File' : 'Create New Folder'}
             </DialogTitle>
+            <DialogDescription>
+              Enter a name for your new {dialogMode}
+            </DialogDescription>
           </DialogHeader>
           <div className="py-4">
             <Input

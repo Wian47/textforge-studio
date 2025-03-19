@@ -150,6 +150,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
       isOpen: true,
     };
     
+    // Create a new copy of the files state to ensure immutability
     if (!parentId) {
       // Add to root
       setFiles(prev => [...prev, newFile]);
@@ -174,12 +175,14 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
           });
         };
         
-        return addFileToFolder(prev);
+        return addFileToFolder([...prev]);
       });
     }
     
-    // Set as active file
-    setActiveFile(newFile);
+    // Set as active file after state update
+    setTimeout(() => {
+      setActiveFile(newFile);
+    }, 0);
   };
   
   // Function to create a new folder
@@ -196,6 +199,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
       children: []
     };
     
+    // Create a new copy of the files state to ensure immutability
     if (!parentId) {
       // Add to root
       setFiles(prev => [...prev, newFolder]);
@@ -220,7 +224,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
           });
         };
         
-        return addFolderToFolder(prev);
+        return addFolderToFolder([...prev]);
       });
     }
   };
@@ -239,16 +243,13 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
             return false; // Remove this file
           }
           if (file.children) {
-            return {
-              ...file,
-              children: deleteFileById(file.children)
-            };
+            file.children = deleteFileById(file.children);
           }
           return true;
         });
       };
       
-      return deleteFileById(prev);
+      return deleteFileById([...prev]);
     });
   };
   
@@ -260,10 +261,30 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
           if (file.id === id) {
             // Update active file if it's the one being renamed
             if (activeFile && activeFile.id === id) {
-              setActiveFile({
+              const updatedFile = {
                 ...file,
                 name: newName
-              });
+              };
+              
+              // Update language if file extension changed
+              if (!file.isDirectory) {
+                const extension = newName.split('.').pop()?.toLowerCase() || '';
+                if (extension === 'js') updatedFile.language = 'javascript';
+                else if (extension === 'ts') updatedFile.language = 'typescript';
+                else if (extension === 'jsx') updatedFile.language = 'javascript';
+                else if (extension === 'tsx') updatedFile.language = 'typescript';
+                else if (extension === 'css') updatedFile.language = 'css';
+                else if (extension === 'html') updatedFile.language = 'html';
+                else if (extension === 'json') updatedFile.language = 'json';
+                else if (extension === 'md') updatedFile.language = 'markdown';
+                else if (extension === 'py') updatedFile.language = 'python';
+              }
+              
+              setTimeout(() => {
+                setActiveFile(updatedFile);
+              }, 0);
+              
+              return updatedFile;
             }
             
             // Determine language if file extension changed
@@ -297,7 +318,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
         });
       };
       
-      return renameFileById(prev);
+      return renameFileById([...prev]);
     });
   };
   
@@ -318,7 +339,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
         });
       };
       
-      return updateFiles(prevFiles);
+      return updateFiles([...prevFiles]);
     });
     
     if (activeFile && activeFile.id === id) {
@@ -357,7 +378,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
         });
       };
       
-      return updateFileContent(prevFiles);
+      return updateFileContent([...prevFiles]);
     });
     
     if (activeFile && activeFile.id === id) {
