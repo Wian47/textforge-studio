@@ -37,6 +37,7 @@ jobs:
         run: |
           cp dist/index.html dist/404.html
           touch dist/.nojekyll
+          cp -r public/* dist/ || echo "No public files to copy"
 
       - name: Deploy to GitHub Pages
         run: |

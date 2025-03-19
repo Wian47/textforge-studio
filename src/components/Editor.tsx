@@ -6,6 +6,13 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import CodeOutput from './CodeOutput';
 
+// Add Monaco type definition
+declare global {
+  interface Window {
+    monaco: any;
+  }
+}
+
 export default function MonacoEditor() {
   const { activeFile, saveFile, theme, editorSettings, setCursorPosition, setExecutionResult, executionResult } = useEditor();
   const { pluginAPI } = usePluginManager();
@@ -26,6 +33,16 @@ export default function MonacoEditor() {
       editorRef.current.setValue(activeFile.content);
     }
   }, [activeFile, currentFileId]);
+
+  // Update editor theme when theme changes
+  useEffect(() => {
+    if (editorRef.current) {
+      const monaco = editorRef.current.getModel()?.getLanguageId && window.monaco;
+      if (monaco) {
+        monaco.editor.setTheme(theme === 'dark' ? 'vs-dark' : 'vs');
+      }
+    }
+  }, [theme]);
   
   const handleEditorDidMount: OnMount = (editor, monaco) => {
     editorRef.current = editor;
@@ -86,9 +103,9 @@ export default function MonacoEditor() {
           height="100%"
           language={activeFile.language}
           value={activeFile.content}
-          theme={theme === 'dark' ? 'vscode-dark' : 'vscode-light'}
+          theme={theme === 'dark' ? 'vs-dark' : 'vs'}
           onMount={handleEditorDidMount}
-          key={activeFile.id} // Add key to force recreation when file changes
+          key={`${activeFile.id}-${theme}`} // Add theme to key to force recreation when theme changes
           options={{
             fontSize: editorSettings.fontSize,
             fontFamily: editorSettings.fontFamily,
