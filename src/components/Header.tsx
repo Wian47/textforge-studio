@@ -2,7 +2,6 @@
 import React from 'react';
 import { Code } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
-import SettingsMenu from './SettingsMenu';
 import { cn } from '@/lib/utils';
 
 export default function Header() {
@@ -18,7 +17,6 @@ export default function Header() {
       
       <div className="flex items-center space-x-2">
         <ThemeToggle />
-        <SettingsMenu />
       </div>
     </header>
   );
