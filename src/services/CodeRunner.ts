@@ -24,11 +24,14 @@ export const CodeRunner = {
       
       // Setup console capture
       let output = '';
-      const originalConsole = iframe.contentWindow?.console;
       
-      if (iframe.contentWindow) {
+      // Type assertion for the console object
+      const contentWindow = iframe.contentWindow as (Window & { console: Console });
+      const originalConsole = contentWindow?.console;
+      
+      if (contentWindow) {
         // Override console methods to capture output
-        iframe.contentWindow.console = {
+        contentWindow.console = {
           ...originalConsole,
           log: (...args: any[]) => {
             output += args.map(arg => 
