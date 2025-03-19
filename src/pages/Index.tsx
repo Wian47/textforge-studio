@@ -24,7 +24,7 @@ const PluginLoader = () => {
     // Register and activate modal editing plugin
     registerPlugin(ModalEditingPlugin);
     activatePlugin('modal-editing');
-  }, [registerPlugin, activatePlugin]);
+  }, []); // Removed dependencies to prevent infinite loop
   
   return null;
 };

@@ -1,5 +1,5 @@
-
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import { ExecutionResult } from '@/services/CodeRunner';
 
 export type CursorPosition = {
   lineNumber: number;
@@ -35,12 +35,14 @@ type EditorContextType = {
   theme: 'light' | 'dark' | 'system';
   editorSettings: EditorSettings;
   cursorPosition: CursorPosition | null;
+  executionResult: ExecutionResult | null;
   setActiveFile: (file: FileType) => void;
   toggleTheme: (newTheme: 'light' | 'dark' | 'system') => void;
   saveFile: (id: string, content: string) => void;
   updateEditorSettings: (settings: Partial<EditorSettings>) => void;
   setCursorPosition: (position: CursorPosition) => void;
   closeFile: (id: string) => void;
+  setExecutionResult: (result: ExecutionResult | null) => void;
 };
 
 const initialEditorSettings: EditorSettings = {
@@ -112,8 +114,8 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('light');
   const [editorSettings, setEditorSettings] = useState<EditorSettings>(initialEditorSettings);
   const [cursorPosition, setCursorPosition] = useState<CursorPosition | null>({ lineNumber: 1, column: 1 });
+  const [executionResult, setExecutionResult] = useState<ExecutionResult | null>(null);
 
-  // Check for user's preferred color scheme
   useEffect(() => {
     const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     if (isDark) {
@@ -137,10 +139,8 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
   };
 
   const setActiveFileHandler = (file: FileType) => {
-    // Skip if trying to open a directory
     if (file.isDirectory) return;
     
-    // Mark the file as open
     setFiles(prevFiles => {
       const markFileOpen = (files: FileType[]): FileType[] => {
         return files.map(f => {
@@ -183,9 +183,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
       return updateFiles(prevFiles);
     });
     
-    // If we're closing the active file, find a new active file
     if (activeFile && activeFile.id === id) {
-      // Find an open file to switch to
       const flattenFiles = (fileTree: FileType[]): FileType[] => {
         return fileTree.reduce((acc, file) => {
           if (file.isDirectory && file.children) {
@@ -237,12 +235,14 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
         theme,
         editorSettings,
         cursorPosition,
+        executionResult,
         setActiveFile: setActiveFileHandler, 
         toggleTheme,
         saveFile,
         updateEditorSettings,
         setCursorPosition,
-        closeFile
+        closeFile,
+        setExecutionResult
       }}
     >
       {children}

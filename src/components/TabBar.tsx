@@ -13,7 +13,7 @@ export default function TabBar() {
   
   return (
     <div className="bg-card border-b border-border h-9 flex-shrink-0">
-      <ScrollArea orientation="horizontal" className="h-full">
+      <ScrollArea className="h-full">
         <div className="flex h-full">
           {openFiles.map(file => (
             <div

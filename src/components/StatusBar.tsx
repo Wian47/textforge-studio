@@ -4,10 +4,10 @@ import { useEditor } from '@/context/EditorContext';
 import { usePluginManager } from '@/plugins/PluginManager';
 import { cn } from '@/lib/utils';
 import { FileType } from '@/context/EditorContext';
-import { Hash, GitBranch, AlertCircle, Check, Wifi } from 'lucide-react';
+import { Hash, GitBranch, AlertCircle, Check, Wifi, Play, X } from 'lucide-react';
 
 export default function StatusBar() {
-  const { activeFile, editorSettings, cursorPosition } = useEditor();
+  const { activeFile, editorSettings, cursorPosition, executionResult } = useEditor();
   const { loadedPlugins, plugins, statusBarItems } = usePluginManager();
   
   // Get status bar items from the plugin manager
@@ -32,6 +32,9 @@ export default function StatusBar() {
     if (!file) return '';
     return file.name.split('.').pop()?.toUpperCase() || '';
   };
+
+  // Determine if the current file can be executed
+  const canRunActiveFile = activeFile && ['javascript', 'typescript', 'jsx', 'tsx'].includes(activeFile.language);
   
   return (
     <div className={cn(
@@ -40,14 +43,45 @@ export default function StatusBar() {
     )}>
       <div className="flex items-center">
         {leftItems}
-        <div className="flex items-center mr-4 text-green-500">
-          <Check size={12} className="mr-1" />
-          <span>No Problems</span>
-        </div>
+        
+        {executionResult && (
+          <div className={cn(
+            "flex items-center mr-4",
+            executionResult.success ? "text-green-500" : "text-red-500"
+          )}>
+            {executionResult.success ? (
+              <>
+                <Check size={12} className="mr-1" />
+                <span>Code executed successfully</span>
+              </>
+            ) : (
+              <>
+                <X size={12} className="mr-1" />
+                <span>Error in code execution</span>
+              </>
+            )}
+          </div>
+        )}
+        
+        {!executionResult && (
+          <div className="flex items-center mr-4 text-green-500">
+            <Check size={12} className="mr-1" />
+            <span>No Problems</span>
+          </div>
+        )}
+        
         <div className="flex items-center mr-4">
           <GitBranch size={12} className="mr-1" />
           <span>main</span>
         </div>
+        
+        {canRunActiveFile && (
+          <div className="flex items-center mr-4 text-blue-500">
+            <Play size={12} className="mr-1" />
+            <span>Runnable</span>
+          </div>
+        )}
+        
         <div className="flex items-center">
           <Wifi size={12} className="mr-1" />
           <span>Connected</span>

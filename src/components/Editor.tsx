@@ -1,14 +1,20 @@
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useEditor } from '@/context/EditorContext';
 import { usePluginManager } from '@/plugins/PluginManager';
 import Editor, { OnMount } from '@monaco-editor/react';
 import { cn } from '@/lib/utils';
+import { Play } from 'lucide-react';
+import { CodeRunner } from '@/services/CodeRunner';
+import { useToast } from '@/hooks/use-toast';
+import CodeOutput from './CodeOutput';
 
 export default function MonacoEditor() {
-  const { activeFile, saveFile, theme, editorSettings, setCursorPosition } = useEditor();
+  const { activeFile, saveFile, theme, editorSettings, setCursorPosition, setExecutionResult, executionResult } = useEditor();
   const { pluginAPI } = usePluginManager();
+  const { toast } = useToast();
   const editorRef = useRef<any>(null);
+  const [showOutput, setShowOutput] = useState(false);
   
   const handleEditorDidMount: OnMount = (editor, monaco) => {
     editorRef.current = editor;
@@ -103,6 +109,52 @@ export default function MonacoEditor() {
       updateEditorOptions(editorRef.current);
     }
   }, [editorSettings]);
+
+  // Function to run the active file's code
+  const runCode = async () => {
+    if (!activeFile) return;
+    
+    try {
+      // Only run JavaScript/TypeScript files
+      if (!['javascript', 'typescript', 'jsx', 'tsx'].includes(activeFile.language)) {
+        toast({
+          title: "Can't run this file type",
+          description: "Only JavaScript and TypeScript files can be executed",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Make sure we have the latest content
+      const content = editorRef.current?.getValue() || activeFile.content;
+      saveFile(activeFile.id, content);
+      
+      // Execute the code
+      const result = await CodeRunner.executeCode(content);
+      setExecutionResult(result);
+      setShowOutput(true);
+      
+      // Show toast notification
+      if (result.success) {
+        toast({
+          title: "Code executed successfully",
+          description: "Check the console output panel",
+        });
+      } else {
+        toast({
+          title: "Error running code",
+          description: result.error || "Unknown error occurred",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Failed to run code",
+        description: error instanceof Error ? error.message : "Unknown error occurred",
+        variant: "destructive"
+      });
+    }
+  };
   
   if (!activeFile) {
     return (
@@ -116,49 +168,73 @@ export default function MonacoEditor() {
   }
   
   return (
-    <div className="flex-1 h-full">
-      <Editor
-        height="100%"
-        language={activeFile.language}
-        value={activeFile.content}
-        theme={theme === 'dark' ? 'vscode-dark' : 'vscode-light'}
-        onMount={handleEditorDidMount}
-        options={{
-          fontSize: editorSettings.fontSize,
-          fontFamily: editorSettings.fontFamily,
-          minimap: { enabled: editorSettings.minimap },
-          scrollBeyondLastLine: false,
-          lineNumbers: editorSettings.lineNumbers ? 'on' : 'off',
-          glyphMargin: true,
-          folding: true,
-          lineDecorationsWidth: 10,
-          lineNumbersMinChars: 3,
-          automaticLayout: true,
-          tabSize: editorSettings.tabSize,
-          wordWrap: editorSettings.wordWrap ? 'on' : 'off',
-          padding: { top: 10 },
-          scrollbar: {
-            useShadows: false,
-            verticalScrollbarSize: 8,
-            horizontalScrollbarSize: 8,
-          },
-          autoClosingBrackets: editorSettings.autoClosingBrackets ? 'always' : 'never',
-          autoClosingQuotes: editorSettings.autoClosingBrackets ? 'always' : 'never',
-          autoIndent: editorSettings.autoIndent ? 'advanced' : 'none',
-          renderLineHighlight: 'line',
-          cursorBlinking: 'smooth',
-          renderWhitespace: 'selection',
-          renderIndentGuides: true,
-          codeLens: true,
-          contextmenu: true,
-          smoothScrolling: true,
-          links: true
-        }}
-        className={cn(
-          "bg-editor-background text-editor-foreground rounded-md transition-colors duration-300",
-          "outline-none"
-        )}
-      />
+    <div className="flex-1 flex flex-col h-full">
+      <div className="flex items-center justify-end bg-card px-2 py-1 border-b border-border">
+        <button
+          onClick={runCode}
+          className={cn(
+            "flex items-center text-xs font-medium px-2 py-1 rounded",
+            "bg-primary text-primary-foreground hover:bg-primary/90",
+            "disabled:opacity-50 disabled:cursor-not-allowed"
+          )}
+          disabled={!['javascript', 'typescript', 'jsx', 'tsx'].includes(activeFile.language)}
+          title="Run code (Ctrl+Enter)"
+        >
+          <Play size={12} className="mr-1" />
+          Run
+        </button>
+      </div>
+      <div className={cn("flex-1 h-0 min-h-0", showOutput && executionResult ? "flex-grow-2" : "")}>
+        <Editor
+          height="100%"
+          language={activeFile.language}
+          value={activeFile.content}
+          theme={theme === 'dark' ? 'vscode-dark' : 'vscode-light'}
+          onMount={handleEditorDidMount}
+          options={{
+            fontSize: editorSettings.fontSize,
+            fontFamily: editorSettings.fontFamily,
+            minimap: { enabled: editorSettings.minimap },
+            scrollBeyondLastLine: false,
+            lineNumbers: editorSettings.lineNumbers ? 'on' : 'off',
+            glyphMargin: true,
+            folding: true,
+            lineDecorationsWidth: 10,
+            lineNumbersMinChars: 3,
+            automaticLayout: true,
+            tabSize: editorSettings.tabSize,
+            wordWrap: editorSettings.wordWrap ? 'on' : 'off',
+            padding: { top: 10 },
+            scrollbar: {
+              useShadows: false,
+              verticalScrollbarSize: 8,
+              horizontalScrollbarSize: 8,
+            },
+            autoClosingBrackets: editorSettings.autoClosingBrackets ? 'always' : 'never',
+            autoClosingQuotes: editorSettings.autoClosingBrackets ? 'always' : 'never',
+            autoIndent: editorSettings.autoIndent ? 'advanced' : 'none',
+            renderLineHighlight: 'line',
+            cursorBlinking: 'smooth',
+            renderWhitespace: 'selection',
+            guides: { indentation: true },
+            codeLens: true,
+            contextmenu: true,
+            smoothScrolling: true,
+            links: true
+          }}
+          className={cn(
+            "bg-editor-background text-editor-foreground rounded-md transition-colors duration-300",
+            "outline-none"
+          )}
+        />
+      </div>
+      
+      {showOutput && executionResult && (
+        <CodeOutput 
+          output={executionResult.error || executionResult.output} 
+          isError={!executionResult.success}
+        />
+      )}
     </div>
   );
 }
