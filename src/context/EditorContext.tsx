@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { ExecutionResult } from '@/services/CodeRunner';
 import { generateId } from '@/lib/utils';
@@ -130,42 +129,6 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
     }
   };
   
-  // Simple recursive function to add a file to a parent folder
-  const addFileToFolder = (filesArray: FileType[], parentId: string, newFile: FileType): FileType[] => {
-    return filesArray.map(file => {
-      if (file.id === parentId) {
-        return {
-          ...file,
-          children: [...(file.children || []), newFile]
-        };
-      }
-      
-      if (file.children) {
-        return {
-          ...file,
-          children: addFileToFolder(file.children, parentId, newFile)
-        };
-      }
-      
-      return file;
-    });
-  };
-  
-  // Simple recursive function to remove a file from the files array
-  const removeFile = (filesArray: FileType[], fileId: string): FileType[] => {
-    return filesArray.filter(file => {
-      if (file.id === fileId) {
-        return false;
-      }
-      
-      if (file.children) {
-        file.children = removeFile(file.children, fileId);
-      }
-      
-      return true;
-    });
-  };
-  
   // Function to create a new file - returns the ID of the new file
   const createFile = (name: string, parentId?: string): string => {
     const newId = generateId();
@@ -181,13 +144,31 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
       isOpen: false,
     };
     
-    if (!parentId) {
-      // Add to root level
-      setFiles(prev => [...prev, newFile]);
-    } else {
-      // Add to folder
-      setFiles(prev => addFileToFolder([...prev], parentId, newFile));
-    }
+    setFiles(prev => {
+      if (!parentId) {
+        return [...prev, newFile];
+      }
+      
+      // Non-recursive approach using a single pass
+      const newFiles = [...prev];
+      const findAndAddToParent = (files: FileType[]) => {
+        for (let i = 0; i < files.length; i++) {
+          if (files[i].id === parentId) {
+            files[i].children = [...(files[i].children || []), newFile];
+            return true;
+          }
+          if (files[i].children?.length) {
+            if (findAndAddToParent(files[i].children)) {
+              return true;
+            }
+          }
+        }
+        return false;
+      };
+      
+      findAndAddToParent(newFiles);
+      return newFiles;
+    });
     
     return newId;
   };
@@ -206,13 +187,31 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
       children: []
     };
     
-    if (!parentId) {
-      // Add to root level
-      setFiles(prev => [...prev, newFolder]);
-    } else {
-      // Add to folder
-      setFiles(prev => addFileToFolder([...prev], parentId, newFolder));
-    }
+    setFiles(prev => {
+      if (!parentId) {
+        return [...prev, newFolder];
+      }
+      
+      // Non-recursive approach using a single pass
+      const newFiles = [...prev];
+      const findAndAddToParent = (files: FileType[]) => {
+        for (let i = 0; i < files.length; i++) {
+          if (files[i].id === parentId) {
+            files[i].children = [...(files[i].children || []), newFolder];
+            return true;
+          }
+          if (files[i].children?.length) {
+            if (findAndAddToParent(files[i].children)) {
+              return true;
+            }
+          }
+        }
+        return false;
+      };
+      
+      findAndAddToParent(newFiles);
+      return newFiles;
+    });
     
     return newId;
   };
@@ -225,7 +224,17 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
     }
     
     // Remove the file from the files array
-    setFiles(prev => removeFile([...prev], id));
+    setFiles(prev => prev.filter(file => {
+      if (file.id === id) {
+        return false;
+      }
+      
+      if (file.children) {
+        file.children = file.children.filter(child => child.id !== id);
+      }
+      
+      return true;
+    }));
   };
   
   // Function to rename a file or folder

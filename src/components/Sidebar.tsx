@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useEditor, FileType } from '@/context/EditorContext';
 import { 
@@ -223,12 +222,14 @@ export default function Sidebar() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<'file' | 'folder'>('file');
   const [newItemName, setNewItemName] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
   const { toast } = useToast();
   
   // Handle creating a new item (file or folder)
-  const handleCreateItem = () => {
-    if (newItemName.trim() === '') return;
+  const handleCreateItem = async () => {
+    if (newItemName.trim() === '' || isCreating) return;
     
+    setIsCreating(true);
     try {
       if (dialogMode === 'file') {
         createFile(newItemName);
@@ -252,6 +253,8 @@ export default function Sidebar() {
         description: error instanceof Error ? error.message : "Unknown error occurred",
         variant: "destructive"
       });
+    } finally {
+      setIsCreating(false);
     }
   };
   
@@ -275,7 +278,7 @@ export default function Sidebar() {
         <span>Explorer</span>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-6 w-6">
+            <Button variant="ghost" size="icon" className="h-6 w-6" disabled={isCreating}>
               <Plus size={16} />
             </Button>
           </DropdownMenuTrigger>
@@ -322,14 +325,22 @@ export default function Sidebar() {
               placeholder={dialogMode === 'file' ? 'filename.js' : 'Folder Name'}
               className="w-full"
               autoFocus
+              disabled={isCreating}
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isCreating}>
               Cancel
             </Button>
-            <Button onClick={handleCreateItem}>
-              Create
+            <Button onClick={handleCreateItem} disabled={isCreating}>
+              {isCreating ? (
+                <>
+                  <span className="mr-2">Creating...</span>
+                  <span className="animate-spin">⚬</span>
+                </>
+              ) : (
+                'Create'
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
