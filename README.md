@@ -1,6 +1,8 @@
 # TextForge Studio
 
-wian47.github.io/textforge-studio/
+https://wian47.github.io/textforge-studio/
+
+![image](https://github.com/user-attachments/assets/b3166176-6194-4b04-b53f-b21a469925ad)
 
 ## About
 
